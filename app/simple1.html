@@ -1,0 +1,156 @@
+<html>
+ <head>
+    <title>THis is some thigs</title>
+   
+	<script src="javascripts/jquery.js"></script>
+	<script src="javascripts/web3.js"></script>	
+
+
+<script language="javascript">
+
+    $(document).ready(function(){
+
+		var Web3 = require('web3');
+		var web3 = new Web3();
+		web3.setProvider(new web3.providers.HttpProvider("http://localhost:7545"));
+
+		
+		var abi2 = [
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "name",
+      "outputs": [
+        {
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "name",
+          "type": "string"
+        }
+      ],
+      "name": "datachange",
+      "type": "event"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_name",
+          "type": "string"
+        }
+      ],
+      "name": "set",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "get",
+      "outputs": [
+        {
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ];
+		
+		
+
+		var sampleContract = web3.eth.contract(abi2);
+
+		var sampleContractInstance = sampleContract.at("0xf1128edea65b801a666b581cfc04c8705d1059af");
+
+				var event = sampleContractInstance.datachange();
+
+				event.watch(function(error, result)
+				{
+					if(!error)
+					{
+						$("#blockchainresult").html(result.args.name); 
+					}
+					else
+					{
+						alert(error);
+					}
+				});
+				
+				
+
+		$("#btn-SetValue").click(function() 
+		{
+			var value = $("#textvalue").val();
+
+			const transactionObject = {
+			  from: web3.eth.accounts[0],
+			  gas: 2000000,
+			  gasPrice: 4
+			};
+			
+			sampleContractInstance.set.sendTransaction(value, transactionObject, (error, result)=> 
+			{  
+				$("#blockchainresult").html("transaction send");  
+			})		
+			
+		});
+		
+
+		$("#btn-GetValue").click(function() {
+			var value = sampleContractInstance.get.call( (error, result) => 
+			{ 
+				$("#blockchainresult").html(result);
+			});
+		});
+        
+    });
+
+</script>
+</head>
+
+
+
+<body class="container">
+	  <h3> 1. Set value in the blockchain contract</h3>
+    	  <input type="text" id="textvalue" value="Value1">
+	  <button id="btn-SetValue">Set Value</button>
+	   
+
+          <h3> 2. Get current blockchain contract value</h3>
+          <button id="btn-GetValue">Get Value</button>
+          <span id="blockchainresult" ></span>
+
+
+	<span>
+	<br><br><br><br>
+	1 Contract name is simple1.sol    
+	<br>
+	2 It simply set and retrieve a value 
+	<br>
+	3 It also shows show to raise a event in contract and capture in the web3 javascript on client side
+	</span>
+
+
+</body>
+  <script></script>
+</html>
+
+
+
+

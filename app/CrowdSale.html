@@ -1,0 +1,206 @@
+<html>
+ <head>
+    <title>THis is some thigs</title>
+   
+		
+	<script src="javascripts/jquery.js"></script>
+	<script src="javascripts/web3.js"></script>	
+
+
+<script language="javascript">
+
+
+    $(document).ready(function(){
+
+
+		var Web3 = require('web3');
+		var web3 = new Web3();
+		web3.setProvider(new web3.providers.HttpProvider("http://localhost:8545"));
+
+		
+		var abi_contract =  [
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "rate",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "wallet",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "token",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "name": "_rate",
+          "type": "uint256"
+        },
+        {
+          "name": "_wallet",
+          "type": "address"
+        },
+        {
+          "name": "_token",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "payable": true,
+      "stateMutability": "payable",
+      "type": "fallback"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "purchaser",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "beneficiary",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "value",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "TokenPurchase",
+      "type": "event"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_beneficiary",
+          "type": "address"
+        }
+      ],
+      "name": "buyTokens",
+      "outputs": [],
+      "payable": true,
+      "stateMutability": "payable",
+      "type": "function"
+    }
+  ];
+
+
+		var sampleContract = web3.eth.contract(abi_contract);
+
+		var ContractAddress = "0x887ac078def1a49aa820bff364765b038fd1a538";
+		var sampleContractInstance = sampleContract.at(ContractAddress);
+
+
+				var event2 = sampleContractInstance.TokenPurchase();
+				event2.watch(function(error, result)
+				{
+					if(!error)
+					{
+					      $("#DebuggerMessage").html("Ether : " + result.args.value + " Tokens : " + result.args.amount );
+					}
+					else
+					{
+						alert("Some Error");
+					}
+				});
+
+ 		
+
+			/*	//Receive event that payment has been received
+				var event = sampleContractInstance.TokenPurchase();
+				event.watch(function(error, result)
+				{
+					if(!error)
+					{
+					      $("#blockchainresult").html("Purchaser : " + result.args.purchaser + " Beneficiery : " + result.args.beneficiary + " Value" + result.args.value + " Amount" + result.args.amount );
+					}
+					else
+					{
+						alert("Some Error");
+					}
+				});  */
+				
+
+
+               
+		$("#btn-SendPaymentToContract").click(function() 
+		{
+			var fromAddress = $("#txt_Address").val();
+			var amount = $("#txt_Amount").val();
+
+web3.eth.sendTransaction({from: fromAddress, value:web3.toWei(amount,'ether'), to: sampleContractInstance.address, data: "This is some message"});
+			
+			alert("Amount " + amount + " send to " + sampleContractInstance.address)
+			
+		});
+
+
+    });
+
+</script>
+</head>
+
+
+
+<body class="container">
+	  <h1>Setting Ownership of the contract</h1>
+
+	  <h3> 1. Send payment to contract</h3>
+    	  From Address : <input type="text" id="txt_Address" value=""><br>
+          Amount : <input type="text" id="txt_Amount" value=""><br>
+	  <button id="btn-SendPaymentToContract">Send Payment To Contract</button>
+	  <br>
+	  Event : <span id="blockchainresult"></span><br>
+	  Debugger : <span id="DebuggerMessage"></span>
+
+</body>
+  <script></script>
+</html>
+
+
+
+

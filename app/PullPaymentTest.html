@@ -1,0 +1,326 @@
+<html>
+ <head>
+    <title>THis is some thigs</title>
+   
+		
+	<script src="javascripts/jquery.js"></script>
+	<script src="javascripts/web3.js"></script>	
+
+
+<script language="javascript">
+
+
+    $(document).ready(function(){
+
+
+		var Web3 = require('web3');
+		var web3 = new Web3();
+		web3.setProvider(new web3.providers.HttpProvider("http://localhost:7545"));
+
+		
+		var abi_contract = [
+					    {
+					      "constant": true,
+					      "inputs": [],
+					      "name": "totalPayments",
+					      "outputs": [
+						{
+						  "name": "",
+						  "type": "uint256"
+						}
+					      ],
+					      "payable": false,
+					      "stateMutability": "view",
+					      "type": "function"
+					    },
+					    {
+					      "constant": true,
+					      "inputs": [
+						{
+						  "name": "",
+						  "type": "address"
+						}
+					      ],
+					      "name": "payments",
+					      "outputs": [
+						{
+						  "name": "",
+						  "type": "uint256"
+						}
+					      ],
+					      "payable": false,
+					      "stateMutability": "view",
+					      "type": "function"
+					    },
+					    {
+					      "payable": true,
+					      "stateMutability": "payable",
+					      "type": "fallback"
+					    },
+					    {
+					      "anonymous": false,
+					      "inputs": [
+						{
+						  "indexed": false,
+						  "name": "dest",
+						  "type": "address"
+						},
+						{
+						  "indexed": false,
+						  "name": "amount",
+						  "type": "uint256"
+						}
+					      ],
+					      "name": "PaymentReceivedEvent",
+					      "type": "event"
+					    },
+					    {
+					      "anonymous": false,
+					      "inputs": [
+						{
+						  "indexed": false,
+						  "name": "amount",
+						  "type": "uint256"
+						},
+						{
+						  "indexed": false,
+						  "name": "totalPayments",
+						  "type": "uint256"
+						}
+					      ],
+					      "name": "AsyncPaymentEventSet",
+					      "type": "event"
+					    },
+					    {
+					      "anonymous": false,
+					      "inputs": [
+						{
+						  "indexed": false,
+						  "name": "dest",
+						  "type": "address"
+						},
+						{
+						  "indexed": false,
+						  "name": "amount",
+						  "type": "uint256"
+						}
+					      ],
+					      "name": "PaymentSendEvent",
+					      "type": "event"
+					    },
+					    {
+					      "constant": true,
+					      "inputs": [],
+					      "name": "HelloWorld",
+					      "outputs": [
+						{
+						  "name": "",
+						  "type": "string"
+						}
+					      ],
+					      "payable": false,
+					      "stateMutability": "pure",
+					      "type": "function"
+					    },
+					    {
+					      "constant": false,
+					      "inputs": [
+						{
+						  "name": "dest",
+						  "type": "address"
+						},
+						{
+						  "name": "amount",
+						  "type": "uint256"
+						}
+					      ],
+					      "name": "asynMarkPayment",
+					      "outputs": [],
+					      "payable": false,
+					      "stateMutability": "nonpayable",
+					      "type": "function"
+					    },
+					    {
+					      "constant": false,
+					      "inputs": [],
+					      "name": "withdrawPayments",
+					      "outputs": [],
+					      "payable": false,
+					      "stateMutability": "nonpayable",
+					      "type": "function"
+					    }
+					  ];
+		
+		
+
+		var sampleContract = web3.eth.contract(abi_contract);
+
+		var ContractAddress = "0x905d5e2ae214eba3264062c96bbeb6d76dc175dd";
+		var sampleContractInstance = sampleContract.at(ContractAddress);
+
+		
+				//Receive event that payment has been received
+				var event = sampleContractInstance.PaymentReceivedEvent();
+				event.watch(function(error, result)
+				{
+					if(!error)
+					{
+					      $("#blockchainresult").html(result.args.amount + " Payment Received from " + result.args.dest );
+					}
+					else
+					{
+						alert("Some Error");
+					}
+				});
+				
+               
+		$("#btn-SendPaymentToContract").click(function() 
+		{
+			var fromAddress = $("#txt_Address").val();
+			var amount = $("#txt_Amount").val();
+
+web3.eth.sendTransaction({from: fromAddress, value:web3.toWei(amount,'ether'), to: sampleContractInstance.address, data: "This is some message"});
+			
+			alert("Amount " + amount + " send to " + sampleContractInstance.address)
+			
+		});
+		
+
+
+
+
+
+
+
+
+				//Receive event that Async payment has been Set
+				var event = sampleContractInstance.AsyncPaymentEventSet();
+				event.watch(function(error, result)
+				{
+					if(!error)
+					{
+					      $("#AsyncReceivePaymentEvent").html(result.args.amount + " Async Payment Received.  Now Total Async Payments are " + result.args.totalPayments );
+					}
+					else
+					{
+						alert("Some Error");
+					}
+				});
+
+
+		$("#btn-SendPaymentToRecipient").click(function() 
+		{
+			var SendToAddress = $("#txt_SendToAddress").val();
+			var SendAmount = $("#txt_SendAmount").val();
+			
+			const transactionObject = {
+			  from: "0xA943EB83821D4C6777330769d55d53e94A5b52A0",   //owner of the contract address
+			  gas: 2000000,
+			  gasPrice: 4
+			};
+			debugger;
+			sampleContractInstance.asynMarkPayment.sendTransaction(SendToAddress, SendAmount, transactionObject, (error, result)=> 
+			{  
+			
+			})				
+
+		});
+
+
+
+
+
+
+
+
+
+				//Receive event that Async payment has been Set
+				var event = sampleContractInstance.PaymentSendEvent();
+				event.watch(function(error, result)
+				{
+					if(!error)
+					{
+					      $("#lbl_PaymentSend").html(result.args.amount + " Amount Send to " + result.args.dest);
+					}
+					else
+					{
+						alert("Some Error");
+					}
+				});
+
+
+
+	$("#btn-ReceivePayment").click(function() 
+	{
+			var ReceivingAddress = $("#txt_ReceivingAddress").val();
+			
+			const transactionObject = {
+			  from: ReceivingAddress,   //owner of the contract address
+			  gas: 2000000,
+			  gasPrice: 4
+			};
+
+		sampleContractInstance.withdrawPayments.sendTransaction(transactionObject, (error, result)=> 
+		{  
+			
+		})				
+
+	});
+
+
+    });
+
+</script>
+</head>
+
+
+
+<body class="container">
+	  <h1>Setting Ownership of the contract</h1>
+
+	  <h3> 1. Send payment to contract</h3>
+    	  From Address : <input type="text" id="txt_Address" value="">
+          Amount : <input type="text" id="txt_Amount" value="">
+	  <button id="btn-SendPaymentToContract">Send Payment To Contract</button>
+
+	   
+          <h3> 2. Event </h3>
+          <span id="blockchainresult"> </span>
+
+
+
+	  <h3> 3. Send Async Payment To Recipient </h3>
+    	  Send To Address : <input type="text" id="txt_SendToAddress" value="">
+          SendAmount : <input type="text" id="txt_SendAmount" value="">
+	  <button id="btn-SendPaymentToRecipient">Send Async Payment To Recipient</button>
+	  <br>Event Message: <span id="AsyncReceivePaymentEvent"> </span>
+
+
+	  <h3> 4. Send Async Payment To Recipient </h3>
+    	  Receiving Address : <input type="text" id="txt_ReceivingAddress" value="">
+	  <button id="btn-ReceivePayment">Receive Payment</button>
+	  <br>Event Message: <span id="lbl_PaymentSend"> </span>
+
+
+
+	<span>
+	<br><br><br><br>
+	1 Contract name is simple1.sol    
+	<br>
+	2 It simply set and retrieve a value 
+	<br>
+	3 It also shows show to raise a event in contract and capture in the web3 javascript on client side
+	</span>
+
+
+
+
+
+
+</body>
+  <script></script>
+</html>
+
+
+
+

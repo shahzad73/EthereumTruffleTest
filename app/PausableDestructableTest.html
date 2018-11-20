@@ -1,0 +1,339 @@
+<html>
+ <head>
+    <title>THis is some thigs</title>
+   
+	<script src="javascripts/jquery.js"></script>
+	<script src="javascripts/web3.js"></script>	
+
+
+<script language="javascript">
+
+    $(document).ready(function(){
+
+		var Web3 = require('web3');
+		var web3 = new Web3();
+		web3.setProvider(new web3.providers.HttpProvider("http://localhost:7545"));
+
+		
+		var contract_abi = [
+				    {
+				      "constant": false,
+				      "inputs": [],
+				      "name": "unpause",
+				      "outputs": [],
+				      "payable": false,
+				      "stateMutability": "nonpayable",
+				      "type": "function"
+				    },
+				    {
+				      "constant": true,
+				      "inputs": [],
+				      "name": "paused",
+				      "outputs": [
+					{
+					  "name": "",
+					  "type": "bool"
+					}
+				      ],
+				      "payable": false,
+				      "stateMutability": "view",
+				      "type": "function"
+				    },
+				    {
+				      "constant": false,
+				      "inputs": [],
+				      "name": "renounceOwnership",
+				      "outputs": [],
+				      "payable": false,
+				      "stateMutability": "nonpayable",
+				      "type": "function"
+				    },
+				    {
+				      "constant": false,
+				      "inputs": [],
+				      "name": "destroy",
+				      "outputs": [],
+				      "payable": false,
+				      "stateMutability": "nonpayable",
+				      "type": "function"
+				    },
+				    {
+				      "constant": false,
+				      "inputs": [],
+				      "name": "pause",
+				      "outputs": [],
+				      "payable": false,
+				      "stateMutability": "nonpayable",
+				      "type": "function"
+				    },
+				    {
+				      "constant": true,
+				      "inputs": [],
+				      "name": "owner",
+				      "outputs": [
+					{
+					  "name": "",
+					  "type": "address"
+					}
+				      ],
+				      "payable": false,
+				      "stateMutability": "view",
+				      "type": "function"
+				    },
+				    {
+				      "constant": false,
+				      "inputs": [
+					{
+					  "name": "_newOwner",
+					  "type": "address"
+					}
+				      ],
+				      "name": "transferOwnership",
+				      "outputs": [],
+				      "payable": false,
+				      "stateMutability": "nonpayable",
+				      "type": "function"
+				    },
+				    {
+				      "constant": false,
+				      "inputs": [
+					{
+					  "name": "_recipient",
+					  "type": "address"
+					}
+				      ],
+				      "name": "destroyAndSend",
+				      "outputs": [],
+				      "payable": false,
+				      "stateMutability": "nonpayable",
+				      "type": "function"
+				    },
+				    {
+				      "anonymous": false,
+				      "inputs": [],
+				      "name": "Pause",
+				      "type": "event"
+				    },
+				    {
+				      "anonymous": false,
+				      "inputs": [],
+				      "name": "Unpause",
+				      "type": "event"
+				    },
+				    {
+				      "anonymous": false,
+				      "inputs": [
+					{
+					  "indexed": true,
+					  "name": "previousOwner",
+					  "type": "address"
+					}
+				      ],
+				      "name": "OwnershipRenounced",
+				      "type": "event"
+				    },
+				    {
+				      "anonymous": false,
+				      "inputs": [
+					{
+					  "indexed": true,
+					  "name": "previousOwner",
+					  "type": "address"
+					},
+					{
+					  "indexed": true,
+					  "name": "newOwner",
+					  "type": "address"
+					}
+				      ],
+				      "name": "OwnershipTransferred",
+				      "type": "event"
+				    },
+				    {
+				      "constant": true,
+				      "inputs": [],
+				      "name": "HelloWorld",
+				      "outputs": [
+					{
+					  "name": "",
+					  "type": "string"
+					}
+				      ],
+				      "payable": false,
+				      "stateMutability": "pure",
+				      "type": "function"
+				    }
+				  ];
+		
+		
+
+		var sampleContract = web3.eth.contract(contract_abi);
+
+		var sampleContractInstance = sampleContract.at("0x56fa97d584f8094f6e8500711342e7ba36f4c0cc");
+
+
+				var ownerShipTransferedEvent = sampleContractInstance.OwnershipTransferred();
+				ownerShipTransferedEvent.watch(function(error, result)
+				{
+					if(!error)
+					{
+						$("#blockchainresult").html("Previous Owner :" + result.args.previousOwner + " New Owner :" + result.args.newOwner);
+						$("#lbl_CurrentOwner").html(result.args.newOwner);
+					}
+					else
+					{
+						alert(error);
+					}
+				});
+				
+				
+				var PauseEvent = sampleContractInstance.Pause();
+				PauseEvent.watch(function(error, result)
+				{
+					if(!error)
+					{
+						getContractusStatus(sampleContractInstance);
+					}
+					else
+					{
+						//alert("Contract Paused Error")
+						getContractusStatus(sampleContractInstance);
+					}
+				});
+
+
+
+			var UnPauseEvent = sampleContractInstance.Unpause();
+				UnPauseEvent.watch(function(error, result)
+				{
+					if(!error)
+					{
+						getContractusStatus(sampleContractInstance);
+					}
+					else
+					{
+						alert("Contract Un-Paused Error")
+					}
+				});
+
+
+
+
+		$("#btn-SetValue").click(function() 
+		{
+			var value = $("#textvalue").val();
+
+			const transactionObject = {
+			  from: $("#lbl_CurrentOwner").html(),
+			  gas: 2000000,
+			  gasPrice: 4
+			};
+			
+			sampleContractInstance.transferOwnership.sendTransaction(value, transactionObject, (error, result)=> 
+			{  
+				$("#blockchainresult").html("transaction send");  
+			})		
+			
+		});
+		
+      
+
+		$("#btn-PauseContract").click(function() 
+		{
+			const transactionObject = {
+			  from: $("#lbl_CurrentOwner").html(),
+			  gas: 2000000,
+			  gasPrice: 4
+			};
+			
+			sampleContractInstance.pause.sendTransaction(transactionObject, (error, result)=> 
+			{  });					
+		});
+
+
+
+		$("#btn-UnPauseContract").click(function() 
+		{
+			const transactionObject = {
+			  from: $("#lbl_CurrentOwner").html(),
+			  gas: 2000000,
+			  gasPrice: 4
+			};
+			
+			sampleContractInstance.unpause.sendTransaction(transactionObject, (error, result)=> 
+			{  });					
+		});
+
+
+
+
+		//Get current owner of the contract
+		var value = sampleContractInstance.owner.call( (error, result) => 
+		{ 
+			$("#lbl_CurrentOwner").html(result);
+		});
+
+        
+    });
+
+
+
+    function getContractusStatus(contract)
+    {
+
+		var value = contract.paused.call( (error, result) => 
+		{ 
+			if(result == true)
+				$("#lbl_ContractStatus").html("Contract is Paused");
+			else
+				$("#lbl_ContractStatus").html("Contract is un-Paused");	
+		});	
+    }
+
+
+</script>
+</head>
+
+
+
+<body class="container">
+
+
+	  <h1>Setting Ownership of the contract</h1>
+
+	  <h3> 1. Current Owner of the contract</h3>
+    	  <span id="lbl_CurrentOwner"> </span>
+
+	  <h3> 2. Enter New Owner of the contract</h3>
+    	  <input type="text" id="textvalue" value="">
+	  <button id="btn-SetValue">Change Owner</button>
+	   
+          <h3> 3. Event </h3>
+          <span id="blockchainresult"> </span>
+
+	 
+	  <h3> 4. Click to Pause the Contract</h3>
+	  <button id="btn-PauseContract">Pause Contract</button>
+
+	  <h3> 5. Click to UnPause the Contract</h3>
+	  <button id="btn-UnPauseContract">Un Pause Contract</button>
+		
+	  <h3>Contract Status - <span id="lbl_ContractStatus"></span></h3>
+
+	<span>
+	<br><br><br><br>
+	1 Contract name is simple1.sol    
+	<br>
+	2 It simply set and retrieve a value 
+	<br>
+	3 It also shows show to raise a event in contract and capture in the web3 javascript on client side
+	</span>
+
+
+</body>
+  <script></script>
+</html>
+
+
+
+
